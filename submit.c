@@ -1,5 +1,10 @@
 #pragma region: environment
 
+#define MAX_GENE_SIZE 4096
+#define POPULATION 500
+#define MAX_LINE_SIZE 64
+#define CALC_TIME 10 * 60
+
 #ifndef DEV_ENV
   #define PROD_ENV
 #endif
@@ -23,11 +28,6 @@
 #pragma endregion
 
 #pragma region: declaration global objects
-
-#define MAX_GENE_SIZE 4096
-#define POPULATION 500
-#define MAX_LINE_SIZE 64
-#define CALC_TIME 10 * 60
 
 double weight[MAX_GENE_SIZE];
 int gene_size;
