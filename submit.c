@@ -215,7 +215,7 @@ void random_point_crossover(const Gene* parent1, const Gene* parent2, Gene* chil
 
 
 void mutate(Gene* gene) {
-  if (((double)(rand() % 100)) / 100 >= MUTATION_PROB) return;
+  if (!stochastic_bool(MUTATION_PROB)) return;
 
   gene->data[rand() % gene_size] ^= 1;
   eval_error(gene);
