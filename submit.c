@@ -8,7 +8,7 @@
 // hyper parameters
 #define POPULATION 500
 #define BREAK_POINT 300000
-#define DEV_MAX_ITERATIONS 100
+#define DEV_MAX_ITERATIONS 10
 
 // environment variable
 #ifdef _WIN64
@@ -167,14 +167,14 @@ void start_ga_iteration() {
       break;
   }
 
-  printf("# gen.:%7d, stag.:%6d\n", gen, stagnation);
+  printf("# gen.:%7d", gen);
   if (local_best.error < global_best.error) {
-    printf("# global update: %.12lf -> %.12lf\n",
+    printf(", \tglobal update: %.12lf -> %.12lf",
       global_best.error == DBL_MAX ? INFINITY : global_best.error,
       local_best.error);
     copy_gene(&local_best, &global_best);
   }
-  printf("\n");
+  printf("\n\n");
 }
 
 
