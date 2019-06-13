@@ -174,13 +174,14 @@ void start_ga_iteration() {
       break;
   }
 
-  printf("# gen.:%7d, stag.:%6d\n\n", gen, stagnation);
+  printf("# gen.:%7d, stag.:%6d\n", gen, stagnation);
   if (local_best.error < global_best.error) {
-    printf("# global update: %.12lf -> %.12lf\n\n",
+    printf("# global update: %.12lf -> %.12lf\n",
       global_best.error == DBL_MAX ? INFINITY : global_best.error,
       local_best.error);
     copy_gene(&local_best, &global_best);
   }
+  printf("\n");
 }
 
 
