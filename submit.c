@@ -43,7 +43,7 @@ void calc();
 void initialize(char genes[POPULATION][MAX_GENE_SIZE]);
 void two_point_crossover(const char* parent1, const char* parent2, char* child1, char* child2);
 void mutate(char* gene);
-char* random_gene(const char genes[POPULATION][MAX_GENE_SIZE]);
+char* random_gene(char genes[POPULATION][MAX_GENE_SIZE]);
 double eval_error(const char* gene);
 
 // utils
@@ -181,7 +181,7 @@ void mutate(char* gene) {
 }
 
 
-char* random_gene(const char genes[POPULATION][MAX_GENE_SIZE]) {
+char* random_gene(char genes[POPULATION][MAX_GENE_SIZE]) {
   return genes[rand() % POPULATION];
 }
 
