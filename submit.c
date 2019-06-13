@@ -1,3 +1,11 @@
+#pragma region: environment
+
+#ifndef DEV_ENV
+  #define PROD_ENV
+#endif
+
+#pragma endregion
+
 #pragma region: include
 
 #include <stdio.h>
@@ -7,10 +15,6 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
-
-#ifndef DEV_ENV
-  #define PROD_ENV
-#endif
 
 #ifdef PROD_ENV
   #include <unistd.h>
