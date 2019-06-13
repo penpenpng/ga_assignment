@@ -9,6 +9,7 @@
 #define POPULATION 500
 #define BREAK_POINT 300000
 #define DEV_MAX_ITERATIONS 10
+#define MUTATION_PROB 0.05
 
 // environment variable
 #ifdef _WIN64
@@ -200,7 +201,10 @@ void two_point_crossover(const Gene* parent1, const Gene* parent2, Gene* child1,
 
 
 void mutate(Gene* gene) {
-  // pass
+  if (((double)(rand() % 100)) / 100 >= MUTATION_PROB) return;
+
+  gene->data[rand() % gene_size] ^= 1;
+  eval_error(gene);
 }
 
 #pragma endregion
