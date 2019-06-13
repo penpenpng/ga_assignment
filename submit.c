@@ -8,7 +8,7 @@
 // hyper parameters
 #define POPULATION 500
 #define BREAK_POINT 300000
-#define DEV_MAX_ITERATIONS 10
+#define DEV_MAX_ITERATIONS 100
 
 // environment variable
 #ifdef _WIN64
@@ -59,9 +59,10 @@ void mutate(Gene* gene);
 
 // utils
 void initialize_genes(Gene genes[]);
-void copy_gene(const Gene* src, Gene* dst);
 Gene* random_choice_from(Gene genes[]);
 void eval_error(Gene* gene);
+void copy_gene(const Gene* src, Gene* dst);
+int cmp_gene(const void* gene1, const void* gene2);
 
 #pragma endregion
 
@@ -145,24 +146,18 @@ void start_ga_iteration() {
     mutate(&child1);
     mutate(&child2);
 
-    if (child1.error < parent1->error)
-      copy_gene(&child1, parent1);
-    if (child2.error < parent2->error)
-      copy_gene(&child2, parent2);
+    Gene* rank[4] = {parent1, parent2, &child1, &child2};
+    qsort(rank, 4, sizeof(Gene*), cmp_gene);
 
-    if (child1.error < local_best.error) {
+    copy_gene(rank[0], rank[0] != parent1 ? parent1 : parent2);
+    copy_gene(rank[1], rank[1] != parent1 ? parent1 : parent2);
+
+    if (rank[0]->error < local_best.error) {
       printf("# stag.: %6d, \tlocal update: %.12lf -> %.12lf\n",
         stagnation,
         local_best.error == DBL_MAX ? INFINITY : local_best.error,
-        child1.error);
-      copy_gene(parent1, &local_best);
-      stagnation = 0;
-    } else if (child2.error < local_best.error) {
-      printf("# stag.: %6d, \tlocal update: %.12lf -> %.12lf\n",
-        stagnation,
-        local_best.error == DBL_MAX ? INFINITY : local_best.error,
-        child2.error);
-      copy_gene(parent2, &local_best);
+        rank[0]->error);
+      copy_gene(rank[0], &local_best);
       stagnation = 0;
     } else {
       stagnation++;
@@ -242,6 +237,11 @@ void eval_error(Gene* gene) {
 void copy_gene(const Gene* src, Gene* dst) {
   memcpy(dst->data, src->data, sizeof(char) * MAX_GENE_SIZE);
   dst->error = src->error;
+}
+
+
+int cmp_gene(const void* gene1, const void* gene2) {
+  return (*(Gene**)gene1)->error > (*(Gene**)gene2)->error ? 1 : -1;
 }
 
 #pragma endregion
