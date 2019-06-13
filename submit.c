@@ -7,9 +7,9 @@
 
 // hyper parameters
 #define POPULATION 500
-#define BREAK_POINT 10000
-#define DEV_MAX_ITERATIONS 3
-#define DEV_MAX_GENERATIONS 50000
+#define BREAK_POINT 50000
+#define DEV_MAX_ITERATIONS 10
+#define DEV_MAX_GENERATIONS 100000
 
 // environment variable
 #ifdef _WIN64
@@ -47,7 +47,7 @@ typedef struct {
 // global variables
 double weight[MAX_GENE_SIZE];
 int gene_size;
-Gene best_gene;
+Gene global_best;
 
 // IO funtions
 void load_input_file(char const *path);
@@ -75,16 +75,19 @@ int main(int argc, char const *argv[]) {
   #endif
 
   srand(time(NULL));
-
-  best_gene.error = DBL_MAX;
   load_input_file(argv[1]);
 
+  global_best.error = DBL_MAX;
+
   #ifdef PROD_ENV
-    for (;;)
+    for (int i = 0;; i++)
   #else
     for (int i = 0; i < DEV_MAX_ITERATIONS; i++)
   #endif
-  start_ga_iteration();
+  {
+    printf("# iteration: %d\n", i + 1);
+    start_ga_iteration();
+  }
   
   return 0;
 }
@@ -107,10 +110,10 @@ void load_input_file(char const *path) {
   fclose(fp);
 }
 
-// print the global variable: best_gene.
+// print the global variable: global_best.
 void output_the_best() {
   for (int i = 0; i < gene_size; i++)
-    printf("%d", best_gene.data[i]);
+    printf("%d", global_best.data[i]);
   putchar('\n');
   exit(0);
 }
@@ -120,17 +123,19 @@ void output_the_best() {
 #pragma region: algorithm
 
 void start_ga_iteration() {
-  printf("# start new iteration\n");
-
   Gene genes[POPULATION];
   initialize_genes(genes);
 
+  Gene local_best;
+  local_best.error = DBL_MAX;
+
   int stagnation = 0;
+  int gen = 0;
 
   #ifdef PROD_ENV
-    for (int gen = 0;; gen++)
+    for (;; gen++)
   #else
-    for (int gen = 0; gen < DEV_MAX_GENERATIONS; gen++)
+    for (; gen < DEV_MAX_GENERATIONS; gen++)
   #endif
   {
     Gene* parent1 = random_choice_from(genes);
@@ -147,21 +152,34 @@ void start_ga_iteration() {
     if (child2.error < parent2->error)
       copy_gene(&child2, parent2);
 
-    if (child1.error < best_gene.error) {
-      copy_gene(parent1, &best_gene);
+    if (child1.error < local_best.error) {
+      printf("# stag.: %6d, \tlocal update: %.12lf -> %.12lf\n",
+        stagnation,
+        local_best.error == DBL_MAX ? INFINITY : local_best.error,
+        child1.error);
+      copy_gene(parent1, &local_best);
       stagnation = 0;
-    }
-    else if (child2.error < best_gene.error) {
-      copy_gene(parent2, &best_gene);
+    } else if (child2.error < local_best.error) {
+      printf("# stag.: %6d, \tlocal update: %.12lf -> %.12lf\n",
+        stagnation,
+        local_best.error == DBL_MAX ? INFINITY : local_best.error,
+        child2.error);
+      copy_gene(parent2, &local_best);
       stagnation = 0;
     } else {
       stagnation++;
     }
 
-    if (stagnation > BREAK_POINT)
-      return;
+    if (stagnation >= BREAK_POINT)
+      break;
+  }
 
-    printf("# Gen.:%d(%d) score: %lf\n", gen, stagnation, best_gene.error);
+  printf("# gen.:%7d, stag.:%6d\n\n", gen, stagnation);
+  if (local_best.error < global_best.error) {
+    printf("# global update: %.12lf -> %.12lf\n\n",
+      global_best.error == DBL_MAX ? INFINITY : global_best.error,
+      local_best.error);
+    copy_gene(&local_best, &global_best);
   }
 }
 
