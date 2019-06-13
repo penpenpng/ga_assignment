@@ -48,14 +48,14 @@ void output_the_best();
 
 // algorithm
 void calc();
-void initialize(Gene genes[]);
 void two_point_crossover(const Gene* parent1, const Gene* parent2, Gene* child1, Gene* child2);
 void mutate(Gene* gene);
-Gene* random_choice_from(Gene genes[]);
-void eval_error(Gene* gene);
 
 // utils
+void initialize_genes(Gene genes[]);
 void copy_gene(const Gene* src, Gene* dst);
+Gene* random_choice_from(Gene genes[]);
+void eval_error(Gene* gene);
 
 #pragma endregion
 
@@ -103,10 +103,11 @@ void output_the_best() {
 
 #pragma endregion
 
+#pragma region: algorithm
 
 void calc() {
   Gene genes[POPULATION];
-  initialize(genes);
+  initialize_genes(genes);
 
   #ifdef DEV_ENV
     #define STOP_CONDITION i < 1000
@@ -137,16 +138,6 @@ void calc() {
   }
 }
 
-// setup the first generation genes
-void initialize(Gene genes[]) {
-  for (int i = 0; i < POPULATION; i++) {
-    for (int j = 0; j < gene_size; j++)
-      genes[i].data[j] = rand() % 2;
-
-    eval_error(&genes[i]);
-  }
-}
-
 
 void two_point_crossover(const Gene* parent1, const Gene* parent2, Gene* child1, Gene* child2) {
   int a = rand() % gene_size;
@@ -173,6 +164,20 @@ void mutate(Gene* gene) {
   // pass
 }
 
+#pragma endregion
+
+#pragma region: utils
+
+// setup the first generation genes
+void initialize_genes(Gene genes[]) {
+  for (int i = 0; i < POPULATION; i++) {
+    for (int j = 0; j < gene_size; j++)
+      genes[i].data[j] = rand() % 2;
+
+    eval_error(&genes[i]);
+  }
+}
+
 
 Gene* random_choice_from(Gene genes[]) {
   return &genes[rand() % POPULATION];
@@ -194,3 +199,5 @@ void copy_gene(const Gene* src, Gene* dst) {
   memcpy(dst->data, src->data, sizeof(char) * MAX_GENE_SIZE);
   dst->error = src->error;
 }
+
+#pragma endregion
