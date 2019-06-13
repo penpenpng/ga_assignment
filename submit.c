@@ -1,10 +1,17 @@
 #pragma region: environment
 
+// fixed parameters
 #define MAX_GENE_SIZE 4096
-#define POPULATION 500
 #define MAX_LINE_SIZE 64
 #define CALC_TIME 10 * 60
 
+// hyper parameters
+#define POPULATION 500
+#define BREAK_POINT 10000
+#define DEV_MAX_ITERATIONS 3
+#define DEV_MAX_GENERATIONS 50000
+
+// environment variable
 #ifdef _WIN64
   #define DEV_ENV
 #else
@@ -47,7 +54,7 @@ void load_input_file(char const *path);
 void output_the_best();
 
 // algorithm
-void calc();
+void start_ga_iteration();
 void two_point_crossover(const Gene* parent1, const Gene* parent2, Gene* child1, Gene* child2);
 void mutate(Gene* gene);
 
@@ -71,7 +78,14 @@ int main(int argc, char const *argv[]) {
 
   best_gene.error = DBL_MAX;
   load_input_file(argv[1]);
-  calc();
+
+  #ifdef PROD_ENV
+    for (;;)
+  #else
+    for (int i = 0; i < DEV_MAX_ITERATIONS; i++)
+  #endif
+  start_ga_iteration();
+  
   return 0;
 }
 
@@ -105,16 +119,20 @@ void output_the_best() {
 
 #pragma region: algorithm
 
-void calc() {
+void start_ga_iteration() {
+  printf("# start new iteration\n");
+
   Gene genes[POPULATION];
   initialize_genes(genes);
 
-  #ifdef DEV_ENV
-    #define STOP_CONDITION i < 1000
+  int stagnation = 0;
+
+  #ifdef PROD_ENV
+    for (int gen = 0;; gen++)
   #else
-    #define STOP_CONDITION
+    for (int gen = 0; gen < DEV_MAX_GENERATIONS; gen++)
   #endif
-  for (int i = 0; STOP_CONDITION; i++) {
+  {
     Gene* parent1 = random_choice_from(genes);
     Gene* parent2 = random_choice_from(genes);
     Gene child1;
@@ -129,12 +147,21 @@ void calc() {
     if (child2.error < parent2->error)
       copy_gene(&child2, parent2);
 
-    if (child1.error < best_gene.error)
+    if (child1.error < best_gene.error) {
       copy_gene(parent1, &best_gene);
-    if (child2.error < best_gene.error)
+      stagnation = 0;
+    }
+    else if (child2.error < best_gene.error) {
       copy_gene(parent2, &best_gene);
+      stagnation = 0;
+    } else {
+      stagnation++;
+    }
 
-    printf("# [%d] min_err: %lf\n", i, best_gene.error);
+    if (stagnation > BREAK_POINT)
+      return;
+
+    printf("# Gen.:%d(%d) score: %lf\n", gen, stagnation, best_gene.error);
   }
 }
 
