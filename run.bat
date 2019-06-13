@@ -4,7 +4,7 @@ if exist a.exe (
   del a.exe
 )
 
-gcc submit.c -D DEV_ENV
+gcc submit.c -D _WIN64
 
 if exist a.exe (
   a.exe %1

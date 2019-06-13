@@ -5,7 +5,9 @@
 #define MAX_LINE_SIZE 64
 #define CALC_TIME 10 * 60
 
-#ifndef DEV_ENV
+#ifdef _WIN64
+  #define DEV_ENV
+#else
   #define PROD_ENV
 #endif
 
