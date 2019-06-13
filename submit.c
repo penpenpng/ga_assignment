@@ -7,9 +7,9 @@
 
 // hyper parameters
 #define POPULATION 300
-#define BREAK_POINT 10000
-#define DEV_MAX_ITERATIONS 10
-#define MUTATION_PROB 0.05
+#define BREAK_POINT 1000000
+#define DEV_MAX_ITERATIONS 1
+#define MUTATION_PROB 0.01
 
 // environment variable
 #ifdef _WIN64
@@ -140,15 +140,15 @@ void start_ga_iteration() {
   int gen = 0;
 
   for (;stagnation < BREAK_POINT; gen++, stagnation++) {
-    Gene* parent1 = random_choice_from(genes);
+    for (int i = 0; i < POPULATION; i++) mutate(&genes[i]);
+
+    Gene *parent1 = random_choice_from(genes);
     Gene* parent2 = random_choice_from(genes);
     Gene child1;
     Gene child2;
 
     two_point_crossover(parent1, parent2, &child1, &child2);
     // random_point_crossover(parent1, parent2, &child1, &child2);
-    mutate(&child1);
-    mutate(&child2);
 
     Gene* rank[4] = {parent1, parent2, &child1, &child2};
     qsort(rank, 4, sizeof(Gene*), cmp_gene);
