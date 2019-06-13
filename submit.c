@@ -7,9 +7,8 @@
 
 // hyper parameters
 #define POPULATION 500
-#define BREAK_POINT 50000
+#define BREAK_POINT 300000
 #define DEV_MAX_ITERATIONS 10
-#define DEV_MAX_GENERATIONS 100000
 
 // environment variable
 #ifdef _WIN64
@@ -136,12 +135,7 @@ void start_ga_iteration() {
   int stagnation = 0;
   int gen = 0;
 
-  #ifdef PROD_ENV
-    for (;; gen++)
-  #else
-    for (; gen < DEV_MAX_GENERATIONS; gen++)
-  #endif
-  {
+  for (;; gen++) {
     Gene* parent1 = random_choice_from(genes);
     Gene* parent2 = random_choice_from(genes);
     Gene child1;
