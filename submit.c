@@ -7,8 +7,8 @@
 
 // hyper parameters
 #define POPULATION 300
-#define BREAK_POINT 1000000
-#define DEV_MAX_ITERATIONS 1
+#define BREAK_POINT 10000
+#define DEV_MAX_ITERATIONS 10
 #define MUTATION_PROB 0.01
 
 // environment variable
@@ -136,44 +136,48 @@ void start_ga_iteration() {
   Gene local_best;
   local_best.error = DBL_MAX;
 
-  int stagnation = 0;
   int gen = 0;
 
-  for (;stagnation < BREAK_POINT; gen++, stagnation++) {
+  for (int stagnation = 0; stagnation < BREAK_POINT; gen++, stagnation++) {
+    // mutation
     for (int i = 0; i < POPULATION; i++) mutate(&genes[i]);
 
+    // crossover
     Gene *parent1 = random_choice_from(genes);
     Gene* parent2 = random_choice_from(genes);
     Gene child1;
     Gene child2;
 
     two_point_crossover(parent1, parent2, &child1, &child2);
-    // random_point_crossover(parent1, parent2, &child1, &child2);
+    // unused: random_point_crossover(parent1, parent2, &child1, &child2);
 
+    // generation change
     Gene* rank[4] = {parent1, parent2, &child1, &child2};
     qsort(rank, 4, sizeof(Gene*), cmp_gene);
-
     copy_gene(rank[0], rank[0] != parent1 ? parent1 : parent2);
     copy_gene(rank[1], rank[1] != parent1 ? parent1 : parent2);
 
+    // update score and dump log
     if (rank[0]->error < local_best.error) {
-      printf("# stag.: %6d, \tlocal update: %.12lf -> %.12lf\n",
+      printf("# stag.: %6d, \tlocal update: %.12lf -> %.12lf",
         stagnation,
         local_best.error == DBL_MAX ? INFINITY : local_best.error,
         rank[0]->error);
       copy_gene(rank[0], &local_best);
       stagnation = 0;
+
+      if (local_best.error < global_best.error) {
+        printf(", \tglobal update: %.12lf -> %.12lf",
+          global_best.error == DBL_MAX ? INFINITY : global_best.error,
+          local_best.error);
+        copy_gene(&local_best, &global_best);
+      }
+
+      printf("\n");
     }
   }
 
-  printf("# gen.:%7d", gen);
-  if (local_best.error < global_best.error) {
-    printf(", \tglobal update: %.12lf -> %.12lf",
-      global_best.error == DBL_MAX ? INFINITY : global_best.error,
-      local_best.error);
-    copy_gene(&local_best, &global_best);
-  }
-  printf("\n\n");
+  printf("# gen.:%7d\n\n", gen);
 }
 
 
