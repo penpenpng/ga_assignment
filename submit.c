@@ -6,8 +6,8 @@
 #define CALC_TIME 10 * 60
 
 // hyper parameters
-#define POPULATION 500
-#define BREAK_POINT 300000
+#define POPULATION 300
+#define BREAK_POINT 10000
 #define DEV_MAX_ITERATIONS 10
 #define MUTATION_PROB 0.05
 
@@ -56,6 +56,7 @@ void output_the_best();
 // algorithm
 void start_ga_iteration();
 void two_point_crossover(const Gene* parent1, const Gene* parent2, Gene* child1, Gene* child2);
+void random_point_crossover(const Gene *parent1, const Gene *parent2, Gene *child1, Gene *child2);
 void mutate(Gene* gene);
 
 // utils
@@ -64,6 +65,7 @@ Gene* random_choice_from(Gene genes[]);
 void eval_error(Gene* gene);
 void copy_gene(const Gene* src, Gene* dst);
 int cmp_gene(const void* gene1, const void* gene2);
+int stochastic_bool(double prob);
 
 #pragma endregion
 
@@ -137,13 +139,14 @@ void start_ga_iteration() {
   int stagnation = 0;
   int gen = 0;
 
-  for (;; gen++) {
+  for (;stagnation < BREAK_POINT; gen++, stagnation++) {
     Gene* parent1 = random_choice_from(genes);
     Gene* parent2 = random_choice_from(genes);
     Gene child1;
     Gene child2;
 
     two_point_crossover(parent1, parent2, &child1, &child2);
+    // random_point_crossover(parent1, parent2, &child1, &child2);
     mutate(&child1);
     mutate(&child2);
 
@@ -160,12 +163,7 @@ void start_ga_iteration() {
         rank[0]->error);
       copy_gene(rank[0], &local_best);
       stagnation = 0;
-    } else {
-      stagnation++;
     }
-
-    if (stagnation >= BREAK_POINT)
-      break;
   }
 
   printf("# gen.:%7d", gen);
@@ -187,6 +185,22 @@ void two_point_crossover(const Gene* parent1, const Gene* parent2, Gene* child1,
 
   for (int i = 0; i < gene_size; i++) {
     if (s <= i && i <= e) {
+      child1->data[i] = parent1->data[i];
+      child2->data[i] = parent2->data[i];
+    } else {
+      child1->data[i] = parent2->data[i];
+      child2->data[i] = parent1->data[i];
+    }
+  }
+
+  eval_error(child1);
+  eval_error(child2);
+}
+
+
+void random_point_crossover(const Gene* parent1, const Gene* parent2, Gene* child1, Gene* child2) {
+  for (int i = 0; i < gene_size; i++) {
+    if (stochastic_bool(0.1)) {
       child1->data[i] = parent1->data[i];
       child2->data[i] = parent2->data[i];
     } else {
@@ -246,6 +260,11 @@ void copy_gene(const Gene* src, Gene* dst) {
 
 int cmp_gene(const void* gene1, const void* gene2) {
   return (*(Gene**)gene1)->error > (*(Gene**)gene2)->error ? 1 : -1;
+}
+
+
+int stochastic_bool(double prob) {
+  ((double)rand()) / RAND_MAX >= prob;
 }
 
 #pragma endregion
