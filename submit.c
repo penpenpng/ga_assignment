@@ -88,6 +88,10 @@ int main(int argc, char const *argv[]) {
     printf("# iteration: %d\n", i + 1);
     start_ga_iteration();
   }
+
+  #ifdef DEV_ENV
+    output_the_best();
+  #endif
   
   return 0;
 }
