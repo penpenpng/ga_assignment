@@ -264,7 +264,7 @@ int cmp_gene(const void* gene1, const void* gene2) {
 
 
 int stochastic_bool(double prob) {
-  ((double)rand()) / RAND_MAX >= prob;
+  return ((double)rand()) / RAND_MAX >= prob;
 }
 
 #pragma endregion
